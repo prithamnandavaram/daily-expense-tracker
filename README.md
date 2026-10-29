@@ -20,6 +20,30 @@ This repository contains an end-to-end Data Engineering and Analytics platform b
 
 ---
 
+## 📸 Product Screenshots & Visual Demonstrations
+
+### 1. Main Analytics Dashboard (Questions a & d)
+*Real-time movie search, Top-5 tag genome relevance scores, and complete rating distribution histogram.*
+![Dashboard Overview](screenshots/02_dashboard_overview.png)
+
+### 2. Dataset-Wide Explorations (Questions b, c, e, f, g)
+*Top 10 movies by Bayesian average rating with annual filter, most popular tags per genre table, and total ratings distribution.*
+![Analytics Scenarios](screenshots/04_analytics_scenarios.png)
+
+### 3. Interactive Movie Search & Rating Submission (Regulation 4)
+*Search autocomplete and live rating modification updating catalog metrics instantly.*
+![Movie Interaction](screenshots/05_movie_interaction.png)
+
+### 4. Project Presentation Deck (Deliverable 1)
+*Built-in slide presentation at `/slides` covering architecture, schemas, and live demo steps.*
+![Presentation Slides](screenshots/06_presentation_slides.png)
+
+### 5. Administrator Console & RBAC
+*Database metrics, user role toggling (Admin ⟷ User), and live rating submissions audit trail.*
+![Admin Console](screenshots/07_admin_console.png)
+
+---
+
 ## 🏗️ Architecture & Technology Stack
 
 ```

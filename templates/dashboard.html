@@ -22,7 +22,6 @@
         </div>
         <div class="nav-actions">
             <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
-            <a href="{{ url_for('presentation_slides') }}" class="nav-link">Presentation Slides</a>
             {% if session.get('role') == 'admin' %}
             <a href="{{ url_for('admin_panel') }}" class="nav-link admin-nav-link">Admin Console</a>
             {% endif %}

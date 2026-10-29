@@ -152,13 +152,6 @@ def admin_panel():
     return render_template("admin.html")
 
 
-@app.route("/slides")
-@login_required
-def presentation_slides():
-    """Deliverable 1: Interactive project presentation slides."""
-    return render_template("slides.html")
-
-
 # ---------------------------------------------------------------------------
 # Analytics API Endpoints (Questions a - g)
 # ---------------------------------------------------------------------------

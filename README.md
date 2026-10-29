@@ -1,9 +1,10 @@
-# MovieLens Data Engineering & Analytics Dashboard
+# MovieLens Data Engineering & Analytics Platform
 
 **Course:** DS5003 Data Engineering Lab  
 **Faculty:** Dr. Koninika Pal  
 **Institution:** Indian Institute of Technology Palakkad (IIT Palakkad)  
 **Handout Date:** 15.10.2026  
+**Repository:** [prithamnandavaram/movielens-data-engineering](https://github.com/prithamnandavaram/movielens-data-engineering)
 
 ---
 
@@ -16,7 +17,7 @@ This repository contains an end-to-end Data Engineering and Analytics platform b
 - **6-File Schema Reorganization:** Reorganizes `movies.csv`, `ratings.csv`, `tags.csv`, `genome-tags.csv`, `genome-scores.csv`, and `links.csv` into query-optimized collections with compound indexes.
 - **Sub-5ms Query Latency:** Pre-aggregated rating distributions and embedded top-relevance genome tags eliminate runtime 25M-row table scans.
 - **Dual-Role Access Control:** Secure user authentication with **Administrator** and **Regular User** roles; users can submit and modify movie ratings in real time.
-- **Interactive Presentation Deck (Deliverable 1):** Built-in presentation slides accessible directly at `/slides` for live project demonstrations.
+- **Full Question Coverage:** Interactive visualizations for all 7 scenarios (a) through (g).
 
 ---
 
@@ -34,11 +35,7 @@ This repository contains an end-to-end Data Engineering and Analytics platform b
 *Search autocomplete and live rating modification updating catalog metrics instantly.*
 ![Movie Interaction](screenshots/05_movie_interaction.png)
 
-### 4. Project Presentation Deck (Deliverable 1)
-*Built-in slide presentation at `/slides` covering architecture, schemas, and live demo steps.*
-![Presentation Slides](screenshots/06_presentation_slides.png)
-
-### 5. Administrator Console & RBAC
+### 4. Administrator Console & RBAC
 *Database metrics, user role toggling (Admin ⟷ User), and live rating submissions audit trail.*
 ![Admin Console](screenshots/07_admin_console.png)
 
@@ -65,11 +62,12 @@ This repository contains an end-to-end Data Engineering and Analytics platform b
                                              │
                                     Flask Backend (app.py)
                                              │
-                        ┌────────────────────┴────────────────────┐
-                        │                                         │
-             Interactive Web UI (/ & /admin)            In-App Slides (/slides)
-             • Chart.js 4.4 Analytics                  • Project Walkthrough
-             • Real-time Rating Updates                • Schema Explanations
+                         ┌───────────────────┴───────────────────┐
+                         │                                       │
+            Main Analytics Dashboard (/)               Admin Console (/admin)
+            • Chart.js 4.4 Analytics                   • System Database Stats
+            • Dynamic Autocomplete Search              • User Role Management
+            • Real-time User Rating Submissions        • Rating Activity Audit
 ```
 
 - **Data Pipeline:** Python 3, `pandas`, `pymongo`
@@ -130,8 +128,8 @@ brew services start mongodb-community@7.0
 
 ### 2. Clone & Setup Virtual Environment
 ```bash
-git clone https://github.com/prithamnandavaram/daily-expense-tracker.git
-cd daily-expense-tracker
+git clone https://github.com/prithamnandavaram/movielens-data-engineering.git
+cd movielens-data-engineering
 
 # Create and activate virtual environment
 python3 -m venv venv
@@ -153,11 +151,10 @@ python load_data.py
 python app.py
 ```
 Open your browser and navigate to:  
-👉 **http://127.0.0.1:5000**
+👉 **http://127.0.0.1:5050**
 
-- **Live Dashboard:** `http://127.0.0.1:5000/`
-- **Presentation Slides (Deliverable 1):** `http://127.0.0.1:5000/slides`
-- **Admin Console:** `http://127.0.0.1:5000/admin`
+- **Live Dashboard:** `http://127.0.0.1:5050/`
+- **Admin Console:** `http://127.0.0.1:5050/admin`
 
 ---
 
@@ -168,23 +165,29 @@ Open your browser and navigate to:
 ├── app.py                # Flask application & analytics REST API
 ├── load_data.py          # Complete ETL pipeline for MovieLens 25M
 ├── requirements.txt      # Minimal production dependencies
-├── .env                  # Environment configuration (MongoDB URI, secret key)
+├── .env                  # Environment configuration (MongoDB URI, secret key, port)
 ├── .gitignore            # Git ignore rules (venv, large datasets, logs)
 ├── README.md             # Project documentation & lab specification report
+├── screenshots/          # High-resolution product demonstration screenshots
 ├── static/
 │   ├── style.css         # Modern dark-theme stylesheet
 │   └── dashboard.js      # Chart.js analytics engine & search autocomplete
 └── templates/
     ├── dashboard.html    # Main analytics dashboard
     ├── admin.html        # Administrator management console
-    ├── slides.html       # Interactive project presentation deck (Deliverable 1)
     ├── login.html        # Secure authentication with quick demo logins
     └── register.html     # User registration page
 ```
 
 ---
 
-## 📜 Deliverables Summary
-1. **Interactive Demo Presentation:** Built directly into the application at `/slides` with keyboard slide controls (`Left`/`Right` arrow keys or `Spacebar`).
-2. **Clean MongoDB Schemas:** Demonstrates real-world NoSQL schema denormalization to handle massive datasets with instantaneous response times.
-3. **Repository Cleanliness:** Minimal dependencies, zero unnecessary files committed, and reproducible with a single command.
+## 📽️ Presentation (PPT Slides Structure for Demo)
+
+For the live project demo and presentation, the accompanying slide deck is organized as follows:
+1. **Title & Problem Statement:** DS5003 Data Engineering Lab, IIT Palakkad, Dr. Koninika Pal.
+2. **Dataset Architecture:** MovieLens 25M CSVs, scaling challenges, and why MongoDB was chosen over relational databases.
+3. **ETL & Schema Reorganization:** Pre-aggregating 25M ratings and embedding top-5 relevance tags to achieve <5ms query response times.
+4. **Questions (a) & (d):** Movie search, tag relevance genome visualization, and rating distributions.
+5. **Questions (b) & (c):** All-time vs year-wise top 10 movies (Bayesian ratings) and most popular tags per genre.
+6. **Questions (e), (f), & (g):** Total rating bucket distribution, yearly genre leaders, and catalog genre coverage.
+7. **Role-Based Access Control:** Live user rating modification demo & administrator management console.

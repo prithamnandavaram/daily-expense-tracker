@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Console | MovieLens Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🛡️</span>
+            <div class="brand-text">
+                <span class="brand-title">Admin Management Console</span>
+                <span class="brand-subtitle">Database Access &amp; Role Management</span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">Back to Dashboard</a>
+            <a href="{{ url_for('presentation_slides') }}" class="nav-link">Presentation Slides</a>
+            <div class="user-pill">
+                <span class="role-chip admin">ADMIN</span>
+                <span class="username">{{ session.get('user') }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Overview Stat Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Catalog Movies</span>
+                <span class="stat-value" id="statMovies">62,423</span>
+                <span class="stat-sub">Reorganized MongoDB Documents</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Baseline Ratings Processed</span>
+                <span class="stat-value">25,000,095</span>
+                <span class="stat-sub">Aggregated into Distributions</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Registered System Users</span>
+                <span class="stat-value" id="statUsers">--</span>
+                <span class="stat-sub">Admin &amp; Regular Roles</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Live User Ratings Submitted</span>
+                <span class="stat-value" id="statUserRatings">--</span>
+                <span class="stat-sub">Dynamic User Interactions</span>
+            </div>
+        </div>
+
+        <!-- User Management Table -->
+        <section class="analytics-card" style="margin-top: 24px;">
+            <div class="card-header flex-between">
+                <div>
+                    <div class="card-title-group">
+                        <span class="section-badge admin">Access Control</span>
+                        <h3>User Accounts &amp; Role Assignments</h3>
+                    </div>
+                    <p class="card-desc">Administrators have full database inspection rights; Regular users have rating modification rights.</p>
+                </div>
+            </div>
+            <div class="table-scroll-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Current Role</th>
+                            <th>Created Timestamp</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="4" class="text-center">Loading user records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Live Rating Modifications Audit Log -->
+        <section class="analytics-card" style="margin-top: 24px;">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <span class="section-badge">Audit Trail</span>
+                    <h3>Recent User Rating Submissions</h3>
+                </div>
+                <p class="card-desc">Audit trail of movie ratings submitted or updated live through the web interface.</p>
+            </div>
+            <div class="table-scroll-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Movie ID</th>
+                            <th>Rating Value</th>
+                            <th style="text-align: right;">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <tr><td colspan="4" class="text-center">Loading audit records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>DS5003 Data Engineering Lab</strong> • Administrator Management Interface</p>
+        </div>
+    </footer>
+
+    <script>
+        async function loadAdminData() {
+            try {
+                const [statsRes, usersRes] = await Promise.all([
+                    fetch('/api/admin/stats').then(r => r.json()),
+                    fetch('/api/admin/users').then(r => r.json())
+                ]);
+
+                document.getElementById('statMovies').textContent = statsRes.totalMovies?.toLocaleString() || '62,423';
+                document.getElementById('statUsers').textContent = statsRes.totalUsers?.toLocaleString() || '0';
+                document.getElementById('statUserRatings').textContent = statsRes.userRatingsCount?.toLocaleString() || '0';
+
+                // Render Users Table
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = usersRes.map(u => `
+                    <tr>
+                        <td><strong>${u.username}</strong></td>
+                        <td><span class="role-chip ${u.role}">${u.role.toUpperCase()}</span></td>
+                        <td class="text-muted font-mono">${u.createdAt || 'Initial Seed'}</td>
+                        <td style="text-align: right;">
+                            <button class="secondary-btn btn-sm" onclick="toggleRole('${u.username}')">
+                                Toggle to ${u.role === 'admin' ? 'USER' : 'ADMIN'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Render Audit Table
+                const auditBody = document.getElementById('auditTableBody');
+                if (statsRes.latestRatings && statsRes.latestRatings.length > 0) {
+                    auditBody.innerHTML = statsRes.latestRatings.map(r => `
+                        <tr>
+                            <td><strong>${r.username}</strong></td>
+                            <td class="font-mono">#${r.movieId}</td>
+                            <td><span class="highlight-text font-bold">${r.rating} ★</span></td>
+                            <td style="text-align: right;" class="text-muted font-mono">
+                                ${new Date(r.timestamp * 1000).toLocaleString()}
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    auditBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No live user rating submissions recorded yet. Rate movies on the dashboard!</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Failed to load admin stats", err);
+            }
+        }
+
+        async function toggleRole(username) {
+            if (!confirm(`Are you sure you want to change the role for user '${username}'?`)) return;
+            const res = await fetch('/api/admin/toggle_role', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            }).then(r => r.json());
+
+            if (res.ok) {
+                loadAdminData();
+            } else {
+                alert(res.error || 'Failed to toggle role');
+            }
+        }
+
+        loadAdminData();
+    </script>
+</body>
+</html>

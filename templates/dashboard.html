@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLens Analytics Dashboard | DS5003 IIT Palakkad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🎬</span>
+            <div class="brand-text">
+                <span class="brand-title">MovieLens Analytics</span>
+                <span class="brand-subtitle">DS5003 • IIT Palakkad</span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
+            <a href="{{ url_for('presentation_slides') }}" class="nav-link">Presentation Slides</a>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_panel') }}" class="nav-link admin-nav-link">Admin Console</a>
+            {% endif %}
+            <div class="user-pill">
+                <span class="role-chip {{ session.get('role') }}">{{ session.get('role', 'user')|upper }}</span>
+                <span class="username">{{ session.get('user') }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Hero Movie Search Section -->
+        <section class="search-hero">
+            <div class="search-header">
+                <h2>Explore Movies & Dynamic Tag Genomes</h2>
+                <p>Search any movie to analyze its relevance genome tags, rating distribution, and submit your personal rating.</p>
+            </div>
+            <div class="search-box-wrapper">
+                <div class="search-input-group">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input id="movieSearch" type="text" placeholder="Type a movie title (e.g. Toy Story, Inception, Matrix, Pulp Fiction)..." autocomplete="off">
+                    <button id="clearSearchBtn" class="clear-btn" style="display:none;">&times;</button>
+                </div>
+                <div id="searchResults" class="search-dropdown"></div>
+            </div>
+
+            <!-- Active Movie Quick Stats Banner -->
+            <div id="selectedMovieBanner" class="selected-movie-card" style="display:none;">
+                <div class="movie-meta-left">
+                    <div class="movie-badge" id="bannerYear">1995</div>
+                    <div>
+                        <h3 id="bannerTitle">Toy Story</h3>
+                        <p id="bannerSub" class="text-muted">ID: #1 • Avg Rating: <span id="bannerAvg" class="highlight-text">3.89 ★</span> (<span id="bannerCount">57,309</span> ratings)</p>
+                    </div>
+                </div>
+                <!-- Interactive Rating Form (Regulation 4) -->
+                <div class="movie-rate-box">
+                    <span class="rate-label">Your Rating:</span>
+                    <div class="rate-controls">
+                        <select id="userRatingSelect" class="styled-select">
+                            <option value="5.0">5.0 ★ (Masterpiece)</option>
+                            <option value="4.5">4.5 ★ (Excellent)</option>
+                            <option value="4.0" selected>4.0 ★ (Great)</option>
+                            <option value="3.5">3.5 ★ (Good)</option>
+                            <option value="3.0">3.0 ★ (Decent)</option>
+                            <option value="2.5">2.5 ★ (Average)</option>
+                            <option value="2.0">2.0 ★ (Mediocre)</option>
+                            <option value="1.5">1.5 ★ (Poor)</option>
+                            <option value="1.0">1.0 ★ (Bad)</option>
+                            <option value="0.5">0.5 ★ (Terrible)</option>
+                        </select>
+                        <button id="submitRatingBtn" class="primary-btn">Submit Rating</button>
+                    </div>
+                    <span id="ratingStatusMsg" class="status-msg"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Movie-Specific Visualizations Grid (Questions a & d) -->
+        <div class="grid-2col">
+            <!-- (a) Top-5 Tags by Relevance -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (a)</span>
+                        <h3>Top-5 Tags by Relevance Score</h3>
+                    </div>
+                    <span class="card-subtitle" id="tagSubtitle">Selected Movie Genome</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartA"></canvas>
+                    <div id="emptyStateA" class="empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <p>Search and select a movie above to view its top tag relevance genome scores.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- (d) Rating Distribution for Selected Movie -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (d)</span>
+                        <h3>Users' Rating Distribution (0.5 – 5.0 ★)</h3>
+                    </div>
+                    <span class="card-subtitle" id="distSubtitle">Votes breakdown</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartD"></canvas>
+                    <div id="emptyStateD" class="empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <p>Search and select a movie above to view its complete user ratings histogram.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Analytics Section Header -->
+        <div class="section-divider">
+            <span class="divider-line"></span>
+            <span class="divider-label">Dataset-Wide Explorations (b, c, e, f, g)</span>
+            <span class="divider-line"></span>
+        </div>
+
+        <!-- (b) Top 10 Movies by Average Rating -->
+        <section class="analytics-card">
+            <div class="card-header flex-between">
+                <div>
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (b)</span>
+                        <h3>Top 10 Movies by Average Rating</h3>
+                    </div>
+                    <p class="card-desc">Ranked by Bayesian-adjusted average rating with minimum review thresholds.</p>
+                </div>
+                <div class="filter-group">
+                    <label for="yearFilterB">Year:</label>
+                    <select id="yearFilterB" class="styled-select filter-select">
+                        <option value="">Overall (All Time)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container tall-chart">
+                <canvas id="chartB"></canvas>
+            </div>
+        </section>
+
+        <!-- 2-Column: (c) Most Popular Tag Per Genre & (e) Total Ratings Distribution -->
+        <div class="grid-2col">
+            <!-- (c) Popular Tag per Genre -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (c)</span>
+                        <h3>Most Popular Tag Given for Each Genre</h3>
+                    </div>
+                    <p class="card-desc">Computed by cross-joining user tag applications with movie genre classifications.</p>
+                </div>
+                <div class="table-scroll-wrapper">
+                    <table class="data-table" id="genreTagsTable">
+                        <thead>
+                            <tr>
+                                <th>Genre</th>
+                                <th>Most Popular Tag</th>
+                                <th style="text-align:right;">Applications</th>
+                            </tr>
+                        </thead>
+                        <tbody id="genreTagsBody">
+                            <tr><td colspan="3" class="text-center">Loading genre tags...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- (e) Distribution of Total Ratings for Movies -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (e)</span>
+                        <h3>Distribution of Total Ratings per Movie</h3>
+                    </div>
+                    <p class="card-desc">Log-scale bucketed distribution of popularity counts across 62,423 movies.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartE"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2-Column: (f) Genre with Highest Releases & (g) Genre-wise Coverage -->
+        <div class="grid-2col">
+            <!-- (f) Genre Releases for Selected Year -->
+            <div class="analytics-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <div class="card-title-group">
+                            <span class="section-badge">Question (f)</span>
+                            <h3>Genre with Highest Releases</h3>
+                        </div>
+                        <p class="card-desc">Identifies which genre dominated cinematic releases in a selected year.</p>
+                    </div>
+                    <div class="filter-group">
+                        <label for="yearFilterF">Year:</label>
+                        <select id="yearFilterF" class="styled-select filter-select">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartF"></canvas>
+                </div>
+            </div>
+
+            <!-- (g) Genre-wise Coverage -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="section-badge">Question (g)</span>
+                        <h3>Genre-wise Coverage of Movies</h3>
+                    </div>
+                    <p class="card-desc">Overall proportional representation of all film genres across the entire database.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartG"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>DS5003 Data Engineering Lab</strong> • Dr. Koninika Pal • IIT Palakkad</p>
+            <p class="footer-tech">Engineered with Python, Flask, MongoDB &amp; Chart.js</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

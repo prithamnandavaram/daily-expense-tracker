@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | MovieLens Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="auth-icon">🎬</span>
+            <h2>MovieLens Analytics</h2>
+            <p class="auth-sub">DS5003 Data Engineering Lab • IIT Palakkad</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="usernameInput">Username</label>
+                <input id="usernameInput" name="username" type="text" placeholder="e.g. admin or user" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="passwordInput">Password</label>
+                <input id="passwordInput" name="password" type="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="primary-btn auth-submit-btn">Sign In to Dashboard</button>
+        </form>
+
+        <div class="demo-logins">
+            <span class="demo-title">Quick Demo Logins</span>
+            <div class="demo-btn-group">
+                <button type="button" class="demo-btn admin-demo" onclick="fillLogin('admin', 'admin123')">
+                    Log in as <strong>Admin</strong>
+                </button>
+                <button type="button" class="demo-btn user-demo" onclick="fillLogin('user', 'user123')">
+                    Log in as <strong>User</strong>
+                </button>
+            </div>
+        </div>
+
+        <p class="auth-footer-link">
+            Need an account? <a href="{{ url_for('register') }}">Create an account</a>
+        </p>
+    </div>
+
+    <script>
+        function fillLogin(u, p) {
+            document.getElementById('usernameInput').value = u;
+            document.getElementById('passwordInput').value = p;
+            document.querySelector('.auth-form').submit();
+        }
+    </script>
+</body>
+</html>

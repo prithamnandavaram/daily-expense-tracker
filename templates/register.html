@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | MovieLens Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="auth-icon">✨</span>
+            <h2>Create an Account</h2>
+            <p class="auth-sub">Register as a Regular User with Rating Privileges</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="usernameInput">Choose Username</label>
+                <input id="usernameInput" name="username" type="text" placeholder="Minimum 3 characters" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="passwordInput">Choose Password</label>
+                <input id="passwordInput" name="password" type="password" placeholder="Minimum 4 characters" required>
+            </div>
+            <button type="submit" class="primary-btn auth-submit-btn">Register Account</button>
+        </form>
+
+        <p class="auth-footer-link">
+            Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+        </p>
+    </div>
+</body>
+</html>
